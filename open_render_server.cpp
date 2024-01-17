@@ -27,10 +27,6 @@ int main(int argc, char* argv[])
 		rapidjson::Document document;
 		document.Parse(body.c_str());
 		auto engine_path = document["enginePath"].GetString();
-		auto active_databases_json = document["activeDatabases"].GetArray();
-		for (int i = 0; i < active_databases_json.Size(); i++) {
-			auto database_id = active_databases_json[i].GetInt();
-		}
 		if (init_engine(engine_path) == 0) {
 			response.status = 200;
 		}
