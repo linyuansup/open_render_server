@@ -3,6 +3,9 @@
 
 #include "open_render_server.h"
 
+std::default_random_engine e;
+auto temp_path = std::filesystem::temp_directory_path().string() + "\openvocaloid\\";
+
 bool exist(std::string& name) {
 	if (FILE* file = fopen(name.c_str(), "r")) {
 		fclose(file);
@@ -13,8 +16,11 @@ bool exist(std::string& name) {
 	}
 }
 
-int main()
+int main(int argc, char* argv[])
 {
+	int port = atoi(argv[1]);
+	e.seed(time(0));
+	mkdir(temp_path.c_str());
 	httplib::Server server;
 	server.Post("/initEngine", [](const httplib::Request& request, httplib::Response& response) {
 		auto& body = request.body;
@@ -58,26 +64,36 @@ int main()
 		return;
 		});
 	server.Post("/render", [](const httplib::Request& request, httplib::Response& response) {
-		auto temp_path = std::filesystem::temp_directory_path().string() + "\openvocaloid\\";
 		auto& body = request.body;
 		rapidjson::Document document;
 		document.Parse(body.c_str());
-		std::string fname = document["filename"].GetString();
-		if (exist(temp_path + fname + ".wav")) {
-			response.status = 200;
-			return;
-		}
+		std::string fname = std::to_string(e());
 		std::ofstream file(temp_path + fname + ".json");
 		file << document["content"].GetString();
 		file.close();
-		int res = render("D:\\93601\\Desktop\\sequence.json", "D:\\93601\\Desktop\\output.wav");
+		int res = render((temp_path + fname + ".json").c_str(), (temp_path + fname + ".wav").c_str());
+		remove((temp_path + fname + ".json").c_str());
 		if (res != 0) {
 			response.status = 400;
 			return;
 		}
+		std::ifstream result(temp_path + fname + ".wav", std::ios::binary);
+		if (result) {
+			result.seekg(0, std::ios::end);
+			size_t length = result.tellg();
+			result.seekg(0, std::ios::beg);
+			std::vector<char> buffer(length);
+			result.read(buffer.data(), length);
+			remove((temp_path + fname + ".wav").c_str());
+			response.set_content(buffer.data(), length, "application/octet-stream");
+			response.set_header("Content-Disposition", "attachment; filename=result.wav");
+		}
+		else {
+			response.status = 404;
+		}
 		response.status = 200;
 		return;
 		});
-	server.listen("0.0.0.0", 6666);
+	server.listen("0.0.0.0", port);
 	return 0;
 }

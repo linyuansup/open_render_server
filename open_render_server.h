@@ -3,8 +3,11 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <stdio.h>
 #include <filesystem>
+#include <random>
 #include <stdlib.h>
+#include <direct.h>
 
 #include "httplib.h"
 #include "rapidjson/document.h"

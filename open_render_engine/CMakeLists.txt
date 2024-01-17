@@ -9,6 +9,6 @@ set(src
 
 add_subdirectory(v5sdk)
 
-add_library(open_render_engine SHARED ${src})
+add_library(open_render_engine STATIC ${src})
 
 target_link_libraries(open_render_engine libV5SDK)
