@@ -5,6 +5,7 @@
 
 std::default_random_engine e;
 auto temp_path = std::filesystem::temp_directory_path().string() + "\openvocaloid\\";
+std::string engine_path;
 
 bool exist(std::string& name) {
 	if (FILE* file = fopen(name.c_str(), "r")) {
@@ -18,27 +19,10 @@ bool exist(std::string& name) {
 
 int main(int argc, char* argv[])
 {
-	int port = atoi(argv[1]);
+	init_engine(argv[2]);
 	e.seed(time(0));
-	mkdir(temp_path.c_str());
+	int res = mkdir(temp_path.c_str());
 	httplib::Server server;
-	server.Post("/initEngine", [](const httplib::Request& request, httplib::Response& response) {
-		auto& body = request.body;
-		rapidjson::Document document;
-		document.Parse(body.c_str());
-		auto engine_path = document["enginePath"].GetString();
-		if (init_engine(engine_path) == 0) {
-			response.status = 200;
-		}
-		else {
-			response.status = 400;
-		}
-		return;
-		});
-	server.Get("/kill", [](const httplib::Request& request, httplib::Response& response) {
-		stop();
-		abort();
-		});
 	server.Get("/database", [](const httplib::Request& request, httplib::Response& response) {
 		rapidjson::Document databases;
 		databases.SetArray();
@@ -90,6 +74,6 @@ int main(int argc, char* argv[])
 		response.status = 200;
 		return;
 		});
-	server.listen("0.0.0.0", port);
+	server.listen("0.0.0.0", atoi(argv[1]));
 	return 0;
 }
