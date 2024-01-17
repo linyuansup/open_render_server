@@ -1,8 +1,4 @@
-﻿// open_render_server.cpp: 定义应用程序的入口点。
-//
-
-#include "open_render_server.h"
-
+﻿#include "open_render_server.h"
 
 std::default_random_engine e;
 auto temp_path = std::filesystem::temp_directory_path().string() + "\openvocaloid\\";
@@ -50,7 +46,10 @@ int main(int argc, char* argv[])
 		}
 		rapidjson::StringBuffer buffer;
 		rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-		databases.Accept(writer);
+		rapidjson::Document result;
+		result.SetObject();
+		result.AddMember("databases", databases, allocator);
+		result.Accept(writer);
 		std::string jsonString = buffer.GetString();
 		response.status = 200;
 		response.body = jsonString;
