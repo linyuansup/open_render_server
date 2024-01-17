@@ -19,10 +19,22 @@ bool exist(std::string& name) {
 
 int main(int argc, char* argv[])
 {
-	init_engine(argv[2]);
 	e.seed(time(0));
 	int res = mkdir(temp_path.c_str());
 	httplib::Server server;
+	server.Get("/initEngine", [](const httplib::Request& request, httplib::Response& response) {
+		if (init_engine(request.get_param_value("path").c_str()) == 0) {
+			response.status = 200;
+		}
+		else {
+			response.status = 400;
+		}
+		return;
+		});
+	server.Get("/kill", [](const httplib::Request& request, httplib::Response& response) {
+		stop();
+		abort();
+		});
 	server.Get("/database", [](const httplib::Request& request, httplib::Response& response) {
 		rapidjson::Document databases;
 		databases.SetArray();
