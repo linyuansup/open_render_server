@@ -3,6 +3,7 @@
 
 #include "open_render_server.h"
 
+
 std::default_random_engine e;
 auto temp_path = std::filesystem::temp_directory_path().string() + "\openvocaloid\\";
 std::string engine_path;
@@ -57,11 +58,9 @@ int main(int argc, char* argv[])
 		});
 	server.Post("/render", [](const httplib::Request& request, httplib::Response& response) {
 		auto& body = request.body;
-		rapidjson::Document document;
-		document.Parse(body.c_str());
 		std::string fname = std::to_string(e());
 		std::ofstream file(temp_path + fname + ".json");
-		file << document["content"].GetString();
+		file << body;
 		file.close();
 		int res = render((temp_path + fname + ".json").c_str(), (temp_path + fname + ".wav").c_str());
 		remove((temp_path + fname + ".json").c_str());
